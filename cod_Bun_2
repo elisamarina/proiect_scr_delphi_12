@@ -30,6 +30,13 @@ type
     FTimeAngle: Double;           // Unghiul de mișcare al soarelui
     FStars: TArray<TPointF>;
     FCloudX, FCloudY: Integer;    // poziţia curentă a norului
+    // Animation control fields
+    HoldingBall: Boolean;             // Whether arm is holding a ball
+    TargetBallIndex: Integer;         // Index of current target ball
+    BallPositions: array of TPoint3D; // Array of ball positions
+    CollectedBalls: array of Boolean; // Tracks which balls are collected
+    BasketPosition: TPoint3D;         // Position of the basket
+    AnimationPhaseComplete: Boolean;  // For tracking phase completion
      // nou: banner pe planul gardului
 
      // Robotic arm fields
@@ -1432,9 +1439,28 @@ begin
   Image1.Stretch := True;
   cloudOffset := 0;
   // Initialize animation parameters
-  ArmState := asIdle;
+ // Initialize animation parameters
   AnimStep := 0;
   GripperOpen := True;
+  ArmState := asIdle;
+  HoldingBall := False;
+  TargetBallIndex := 0;
+
+  // Set up tennis ball positions
+  SetLength(BallPositions, 5);
+  BallPositions[0] := Make3D(-50, 10, -100);
+  BallPositions[1] := Make3D(30, 10, 80);
+  BallPositions[2] := Make3D(-120, 10, 40);
+  BallPositions[3] := Make3D(80, 10, 0);
+  BallPositions[4] := Make3D(0, 10, -60);
+
+// Set which balls have been collected
+SetLength(CollectedBalls, 5);
+for var j := 0 to 4 do
+  CollectedBalls[j] := False;
+
+// Set basket position
+BasketPosition := Make3D(250, 40, -200);
   // Setăm bitmap-ul de la Image1 la 32-bit pentru suportul stelelor și al gradientului
   Image1.Picture.Bitmap := TBitmap.Create;
   Image1.Picture.Bitmap.PixelFormat := pf32bit;
